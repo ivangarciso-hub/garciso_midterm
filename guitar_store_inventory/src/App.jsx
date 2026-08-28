@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {flexRender, getCoreRowModel, getPaginationRowModel, useReactTable, } from "@tanstack/react-table";
 import styles from "./App.module.css";
 
@@ -20,6 +20,17 @@ function App() {
   const [currentView, setCurrentView] = useState("form");
 
   const [selectedGuitar, setSelectedGuitar] = useState(null);
+
+    // Stores the guitar displayed in the complete detail card
+  const [activeGuitar, setActiveGuitar] = useState(null);
+
+  // Controls the Merchant and Consumer table filter
+  const [roleFilter, setRoleFilter] = useState("All");
+
+  // Synchronizes the selected table row with the active detail card
+  useEffect(() => {
+    setActiveGuitar(selectedGuitar);
+  }, [selectedGuitar]);
 
   function validateField(name, value) {
     const cleanedValue =
@@ -121,6 +132,16 @@ function App() {
     return errors[fieldName] ? styles.invalidInput : "";
   }
 
+  const filteredGuitars = useMemo(() => {
+  if (roleFilter === "All") {
+    return guitars;
+  }
+
+  return guitars.filter(
+    (guitar) => guitar.userRole === roleFilter
+  );
+  }, [guitars, roleFilter]);
+
   const columns = useMemo(
     () => [
       {
@@ -167,7 +188,7 @@ function App() {
   );
 
   const table = useReactTable({
-    data: guitars,
+    data: filteredGuitars,
     columns,
 
     // Four records will be displayed per page
@@ -433,6 +454,23 @@ function App() {
                 </p>
               </div>
 
+              <div className={styles.tableActions}>
+              <label className={styles.filterControl}>
+                <span>Filter by Role</span>
+
+                <select
+                  value={roleFilter}
+                  onChange={(event) => {
+                    setRoleFilter(event.target.value);
+                    table.setPageIndex(0);
+                  }}
+                >
+                  <option value="All">All Roles</option>
+                  <option value="Merchant">Merchant</option>
+                  <option value="Consumer">Consumer</option>
+                </select>
+              </label>
+
               <button
                 type="button"
                 className={styles.addButton}
@@ -440,6 +478,7 @@ function App() {
               >
                 + Add Guitar
               </button>
+            </div>
             </div>
 
             {selectedGuitar && (
@@ -539,6 +578,103 @@ function App() {
                 Next
               </button>
             </div>
+
+            <div className={styles.profileSection}>
+            {activeGuitar ? (
+              <article className={styles.detailCard}>
+                <div className={styles.detailTop}>
+                  <div>
+                    <p className={styles.label}>
+                      Active Item Profile
+                    </p>
+
+                    <h3>{activeGuitar.guitarModel}</h3>
+                  </div>
+
+                  <span
+                    className={
+                      activeGuitar.userRole === "Merchant"
+                        ? styles.merchantBadge
+                        : styles.consumerBadge
+                    }
+                  >
+                    {activeGuitar.userRole}
+                  </span>
+                </div>
+
+                <div className={styles.detailGrid}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>
+                      Guitar Model
+                    </span>
+
+                    <strong className={styles.detailValue}>
+                      {activeGuitar.guitarModel}
+                    </strong>
+                  </div>
+
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>
+                      Body Type
+                    </span>
+
+                    <strong className={styles.detailValue}>
+                      {activeGuitar.bodyType}
+                    </strong>
+                  </div>
+
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>
+                      Brand Name
+                    </span>
+
+                    <strong className={styles.detailValue}>
+                      {activeGuitar.brandName}
+                    </strong>
+                  </div>
+
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>
+                      Stock Quantity
+                    </span>
+
+                    <strong className={styles.detailValue}>
+                      {activeGuitar.stockQuantity} units
+                    </strong>
+                  </div>
+
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>
+                      Manufacturer
+                    </span>
+
+                    <strong className={styles.detailValue}>
+                      {activeGuitar.manufacturerName}
+                    </strong>
+                  </div>
+
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>
+                      Assigned User Role
+                    </span>
+
+                    <strong className={styles.detailValue}>
+                      {activeGuitar.userRole}
+                    </strong>
+                  </div>
+                </div>
+              </article>
+            ) : (
+              <div className={styles.emptyDetail}>
+                <h3>No active guitar selected</h3>
+
+                <p>
+                  Click a table row to display its complete details.
+                </p>
+              </div>
+            )}
+          </div>
+
           </section>
         )}
       </div>

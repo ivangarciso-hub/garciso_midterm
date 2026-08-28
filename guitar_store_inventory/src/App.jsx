@@ -15,13 +15,10 @@ function App() {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
 
-  // Stores all successfully submitted guitar records
   const [guitars, setGuitars] = useState([]);
 
-  // Controls whether the Form or Registry is displayed
   const [currentView, setCurrentView] = useState("form");
 
-  // Stores the row selected by the user
   const [selectedGuitar, setSelectedGuitar] = useState(null);
 
   function validateField(name, value) {
